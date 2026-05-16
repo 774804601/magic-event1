@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>巫师影像大赏 · 魔法盛典</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: radial-gradient(circle at 20% 10%, #0a0619, #020014);
+            font-family: 'Cinema', 'League Spartan', 'Poppins', 'Segoe UI', system-ui, sans-serif;
+            color: #f0e6d0;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+            100% { transform: translateY(-120px) rotate(20deg); opacity: 0; }
+        }
+        .magic-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 1.2rem;
+            animation: floatParticle 2s ease-out forwards;
+        }
+        .spell-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, rgba(0,0,0,0) 80%);
+            animation: flashGlow 0.5s ease-out;
+            z-index: 1000;
+        }
+        @keyframes flashGlow {
+            0% { opacity: 1; transform: scale(1);}
+            100% { opacity: 0; transform: scale(2);}
+        }
+        .event-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-banner {
+            background: linear-gradient(135deg, #120e24, #1b142e);
+            border-radius: 56px;
+            padding: 30px 32px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 35px -8px black, inset 0 1px 0 rgba(255,215,0,0.4);
+            border: 1px solid #f3c26b80;
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::after {
+            content: "⚡🧙✨";
+            font-size: 140px;
+            position: absolute;
+            right: -20px;
+            bottom: -40px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .tournament-badge {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+        }
+        .title-group h1 {
+            font-size: 3.2rem;
+            background: linear-gradient(135deg, #FFE6A3, #F7B42C, #D48F1B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 3px;
+        }
+        .title-group p {
+            font-size: 1rem;
+            border-left: 4px solid #ffcd5c;
+            padding-left: 16px;
+            margin-top: 8px;
+        }
+        .split-dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            margin-bottom: 48px;
+        }
+        .wand-section {
+            flex: 1.2;
+            background: #0f0c1dd9;
+            backdrop-filter: blur(12px);
+            border-radius: 56px;
+            padding: 28px 20px;
+            border: 1px solid #ffd96680;
+            box-shadow: 0 12px 28px black;
+        }
+        .rank-section {
+            flex: 1;
+            background: #0f0c1dd9;
+            backdrop-filter: blur(12px);
+            border-radius: 56px;
+            padding: 22px 18px;
+            border: 1px solid #ffd96680;
+        }
+        .wand-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 0 8px gold);
+            text-align: center;
+        }
+        .draw-btn {
+            background: linear-gradient(145deg, #342b4e, #1f1935);
+            border: none;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 14px 28px;
+            border-radius: 60px;
+            color: #ffeaac;
+            width: 85%;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #0b0819;
+            transition: 0.07s linear;
+            font-family: inherit;
+        }
+        .draw-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #0b0819; }
+        .current-spell {
+            background: #010008b3;
+            border-radius: 80px;
+            padding: 14px;
+            text-align: center;
+            font-weight: bold;
+            margin: 12px 0;
+        }
+        .fun-item-badge {
+            background: #2e2546;
+            border-radius: 40px;
+            padding: 8px 12px;
+            display: inline-block;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+        .upload-area {
+            background: #19142b;
+            border-radius: 40px;
+            padding: 18px;
+            margin-top: 20px;
+            border: 1px dashed #ebb33b;
+        }
+        .custom-file-upload, .submit-artwork {
+            background: #2f2648;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 6px 0;
+            font-weight: bold;
+            transition: 0.1s;
+            border: none;
+            color: #ffeaac;
+        }
+        textarea {
+            width: 100%;
+            background: #0a0722;
+            border: 1px solid #ffd966;
+            border-radius: 28px;
+            padding: 10px;
+            color: #f0e2c5;
+            margin: 8px 0;
+            font-family: inherit;
+            resize: vertical;
+        }
+        #imgPreview {
+            max-width: 100%;
+            max-height: 120px;
+            border-radius: 24px;
+            margin-top: 8px;
+            display: none;
+            border: 2px solid #ffcd5c;
+        }
+        .rank-header {
+            font-size: 1.8rem;
+            border-left: 6px solid #ffcd5c;
+            padding-left: 18px;
+            margin-bottom: 20px;
+        }
+        .rank-list {
+            list-style: none;
+            max-height: 460px;
+            overflow-y: auto;
+        }
+        .rank-item {
+            background: #0b0820b3;
+            margin: 12px 0;
+            padding: 10px 16px;
+            border-radius: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #f5b82e;
+        }
+        .gallery-title {
+            font-size: 2rem;
+            margin: 40px 0 20px 0;
+            border-left: 8px solid #ffd966;
+            padding-left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 28px;
+        }
+        .artwork-card {
+            background: linear-gradient(145deg, #1a162f, #0f0c20);
+            border-radius: 36px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #ffcf4a70;
+            box-shadow: 0 8px 20px black;
+        }
+        .artwork-card:hover { transform: translateY(-5px); border-color: #ffdf8c; }
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #03000f;
+            border-bottom: 2px solid #f5b82e;
+        }
+        .card-info {
+            padding: 16px;
+        }
+        .spell-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .fun-magic {
+            background: #2a1e3c;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin: 4px 0;
+        }
+        .user-text {
+            background: #00000060;
+            border-radius: 24px;
+            padding: 8px 12px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        .vote-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .vote-btn {
+            background: #30284b;
+            border: none;
+            color: #ffdd99;
+            padding: 6px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .vote-btn.disabled { background: #2a273c; cursor: not-allowed; opacity: 0.6; }
+        .comments-section {
+            margin-top: 16px;
+            border-top: 1px solid #ffd96640;
+            padding-top: 12px;
+        }
+        .comment-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .comment-input input {
+            flex: 1;
+            background: #0c0a1a;
+            border: 1px solid #f3c26b;
+            border-radius: 40px;
+            padding: 6px 12px;
+            color: white;
+        }
+        .comment-input button {
+            background: #52467b;
+            border: none;
+            border-radius: 40px;
+            padding: 0 14px;
+            cursor: pointer;
+        }
+        .comment-list {
+            font-size: 0.8rem;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .comment-item {
+            background: #00000050;
+            margin: 4px 0;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+        .fun-showcase {
+            margin-top: 30px;
+            background: #0c0920b3;
+            border-radius: 48px;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+        }
+        .fun-title {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .fun-items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .fun-tag {
+            background: #2b1f46;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            border-left: 4px solid #ffc857;
+        }
+        button, .custom-file-upload { cursor: pointer; }
+        /* 暗码弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(8px);
+        }
+        .modal-card {
+            background: #1e1a36;
+            border-radius: 48px;
+            padding: 32px;
+            max-width: 400px;
+            text-align: center;
+            border: 2px solid #ffd966;
+            box-shadow: 0 0 40px gold;
+        }
+        .modal-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 60px;
+            border: none;
+            background: #0d0a1f;
+            color: #ffeaac;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .modal-card button {
+            background: #f3b33d;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .reset-admin {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.7rem;
+        }
+        .reset-admin button {
+            background: #2a2246;
+            border: none;
+            color: #b8954a;
+            padding: 4px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        @media (max-width: 780px) {
+            .title-group h1 { font-size: 2rem; }
+            .draw-btn { width: 100%; font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+<div id="secretModal" class="modal">
+    <div class="modal-card">
+        <h2>🔐 魔法部认证</h2>
+        <p>请输入本群专属暗码</p>
+        <input type="password" id="secretInput" placeholder="群暗码">
+        <button id="verifyBtn">进入魔法盛典</button>
+    </div>
+</div>
+
+<div id="mainApp" style="display: none;">
+<div class="event-container">
+    <div class="hero-banner">
+        <div class="tournament-badge">
+            <div class="title-group">
+                <h1>⚡ 巫师影像大赏 ⚡</h1>
+                <p>魔咒创作 · 奇遇分享 · 全民票选</p>
+            </div>
+            <div class="prize-pool-info">🏆 10项神秘巫师奖座 🏆</div>
+        </div>
+    </div>
+
+    <div class="split-dashboard">
+        <div class="wand-section">
+            <div class="wand-icon">🪄✨🔮</div>
+            <button class="draw-btn" id="drawMagicBtn">🪄 挥动魔杖 · 召唤灵感 ✨</button>
+            <div class="current-spell" id="spellDisplay">⚡ 点击魔杖，获得魔法与奇物 ⚡</div>
+            <div id="funElementDisplay" class="fun-item-badge" style="display: none;"></div>
+            <div id="uploadBlock" style="display: none;">
+                <div class="upload-area">
+                    <p>📸 上传魔法影像（与咒语相关）</p>
+                    <label class="custom-file-upload">📁 选择图片<input type="file" id="imageUpload" accept="image/*" style="display: none;"></label>
+                    <img id="imgPreview" style="max-width:100%; max-height:100px; border-radius:20px; display:none;">
+                    <textarea id="storyText" rows="2" placeholder="分享你的魔法奇遇、吐槽或生活故事……（例如：我在对角巷撞见多比偷袜子）"></textarea>
+                    <button id="submitWorkBtn" class="submit-artwork">✨ 提交参赛作品 ✨</button>
+                </div>
+            </div>
+            <div class="fun-showcase">
+                <div class="fun-title">🎁 魔法奇物展示墙 🎁</div>
+                <div id="funItemsList" class="fun-items-list">✨ 挥动魔杖的巫师会留下奇物踪迹 ✨</div>
+            </div>
+        </div>
+
+        <div class="rank-section">
+            <div class="rank-header">🏆 巫师榜排名 🏆</div>
+            <ul class="rank-list" id="rankList"><li>✨ 等待作品参与排名 ✨</li></ul>
+        </div>
+    </div>
+
+    <div class="gallery-title">
+        <span>🎨 参赛魔法画廊（可投票 & 评论）</span>
+        <span style="font-size:0.9rem;">↓ 为喜爱的巫师应援 ↓</span>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+    <div class="footer-note">🧙 每位巫师限投一件作品，每件作品限投一票 · 评论自由 · 角逐十大神秘奖项</div>
+    <div id="adminResetContainer" style="display: none;" class="reset-admin"><button id="adminResetBtn">🧹 重置所有数据（仅管理员）</button></div>
+</div>
+</div>
+
+<script>
+    // ======================= 群暗码（修改为 CN2026）=======================
+    const GROUP_SECRET = "CN2026";   // 在微信群内公布这个暗码
+
+    // ======================= 管理员密码（URL参数 ?admin=此处密码 显示重置按钮）=======================
+    const ADMIN_SECRET = "WizardMaster2026";  // 修改为您自己的管理密码
+
+    // 检测是否为管理员模式（URL 参数 ?admin=密码）
+    function isAdminMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('admin') === ADMIN_SECRET;
+    }
+
+    // ======================= 魔法库 ========================
+    const SPELLS = [
+        "🔥 火焰熊熊", "💧 清水如泉", "⚡ 除你武器", "🌙 荧光闪烁",
+        "🛡️ 盔甲护身", "💤 昏昏倒地", "🌀 神锋无影", "✨ 羽加迪姆勒维奥萨",
+        "🐺 呼神护卫", "🖤 统统石化", "🌪️ 飓风咒", "🔮 预言未来"
+    ];
+    const FUN_ITEMS = [
+        "🧦 多比的袜子", "🐌 鼻涕虫", "⭐ 小天狼星", "🗺️ 活点地图", 
+        "🍺 黄油啤酒", "🪄 失传的魔杖", "👑 拉文克劳的冠冕", "⚔️ 格兰芬多的宝剑",
+        "🕰️ 时间转换器", "📖 妖怪们的妖怪书"
+    ];
+    const AWARDS = [
+        "🏆 梅林勋章巫师", "🍀 福灵剂巫师", "🕊️ 自由巫师", 
+        "🎆 韦斯莱把戏坊奖", "💭 冥想盆奖", "🍋 柠檬雪宝糖奖",
+        "✨ 金色飞贼奖", "💰 金加隆奖", "🧝 精灵的祝福奖", "🕯️ 神秘巫师"
+    ];
+
+    // 示例作品（仅展示，不可投票，票数始终为0）
+    // 修改了文字：原“巫师们，你们被哪位教授坑过？” 改为 “但我很想念他。”
+    const EXAMPLE_WORK = {
+        id: "example_work",
+        spellName: "⚡ 吐槽咒 · 意外事故 ⚡",
+        funItem: "📖 前任校长的移形换影",
+        imageBase64: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%23211e36'/%3E%3Ctext x='30' y='100' fill='%23ffdc97' font-size='20'%3E💥 阿不福思·邓布利多 💥%3C/text%3E%3Ctext x='30' y='150' fill='%23ffbc6e' font-size='16'%3E移形换影砸中我的头顶！🔥%3C/text%3E%3C/svg%3E",
+        userText: "我要吐槽霍格沃兹的前任校长阿不福思•邓布利多，他移形换影的时候正好砸在了我的头上🔥。但我很想念他。",
+        votes: 0,
+        isExample: true,
+        comments: []
+    };
+
+    let artworks = [];
+    let allFunItems = [];
+    let currentUserVotedIds = [];
+    let currentUserSubmitted = false;
+    let currentDrawn = { spell: null, funItem: null };
+
+    // 加载数据
+    function loadData() {
+        const storedArts = localStorage.getItem("magic_artworks");
+        artworks = storedArts ? JSON.parse(storedArts) : [];
+        const storedFun = localStorage.getItem("fun_items_list");
+        allFunItems = storedFun ? JSON.parse(storedFun) : [];
+        const storedVoted = localStorage.getItem("user_voted_ids");
+        currentUserVotedIds = storedVoted ? JSON.parse(storedVoted) : [];
+        const submittedFlag = localStorage.getItem("user_submitted_flag");
+        currentUserSubmitted = submittedFlag === "true";
+        const storedExampleComments = localStorage.getItem("example_comments");
+        EXAMPLE_WORK.comments = storedExampleComments ? JSON.parse(storedExampleComments) : [];
+        renderGallery();
+        updateRanking();
+        renderFunShowcase();
+    }
+
+    function persistAll() {
+        localStorage.setItem("magic_artworks", JSON.stringify(artworks));
+        localStorage.setItem("fun_items_list", JSON.stringify(allFunItems));
+        localStorage.setItem("user_voted_ids", JSON.stringify(currentUserVotedIds));
+        localStorage.setItem("example_comments", JSON.stringify(EXAMPLE_WORK.comments));
+    }
+
+    // 重置所有数据（仅管理员可通过按钮调用）
+    function resetAllData() {
+        if (!confirm("⚠️ 重置将清除所有参赛作品、投票记录和您的提交状态。示例作品评论也会清空。确定吗？")) return;
+        artworks = [];
+        allFunItems = [];
+        currentUserVotedIds = [];
+        currentUserSubmitted = false;
+        currentDrawn = { spell: null, funItem: null };
+        EXAMPLE_WORK.comments = [];
+        localStorage.clear();
+        persistAll();
+        document.getElementById("uploadBlock").style.display = "none";
+        document.getElementById("spellDisplay").innerHTML = "⚡ 点击魔杖，获得魔法与奇物 ⚡";
+        document.getElementById("funElementDisplay").style.display = "none";
+        document.getElementById("imgPreview").style.display = "none";
+        document.getElementById("imageUpload").value = "";
+        document.getElementById("storyText").value = "";
+        renderGallery();
+        updateRanking();
+        renderFunShowcase();
+        alert("所有数据已重置，示例作品重新出现。");
+        createMagicGlow();
+    }
+
+    // 抽魔杖
+    function drawMagic() {
+        if (currentUserSubmitted) {
+            alert("你已经提交过作品，无法再次抽选投稿。");
+            return;
+        }
+        const randomSpell = SPELLS[Math.floor(Math.random() * SPELLS.length)];
+        const randomFun = FUN_ITEMS[Math.floor(Math.random() * FUN_ITEMS.length)];
+        currentDrawn = { spell: randomSpell, funItem: randomFun };
+        document.getElementById("spellDisplay").innerHTML = `✨ 抽到魔法：${randomSpell} ✨`;
+        const funDiv = document.getElementById("funElementDisplay");
+        funDiv.style.display = "inline-block";
+        funDiv.innerHTML = `🎁 奇物：${randomFun} 🎁`;
+        document.getElementById("uploadBlock").style.display = "block";
+        createMagicGlow();
+        for(let i=0;i<8;i++) createFloatingParticle("✨");
+        allFunItems.unshift({ item: randomFun, timestamp: Date.now() });
+        persistAll();
+        renderFunShowcase();
+    }
+
+    function createMagicGlow() {
+        const glow = document.createElement("div");
+        glow.className = "spell-glow";
+        document.body.appendChild(glow);
+        setTimeout(() => glow.remove(), 500);
+    }
+    function createFloatingParticle(char) {
+        const particle = document.createElement("div");
+        particle.className = "magic-particle";
+        particle.innerText = char || "✨";
+        particle.style.left = Math.random() * window.innerWidth + "px";
+        particle.style.top = window.innerHeight - 50 + "px";
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 2000);
+    }
+
+    // 提交作品
+    function submitArtwork() {
+        if (currentUserSubmitted) {
+            alert("每位巫师只能提交一件魔法作品！你已经参与过了。");
+            return;
+        }
+        if (!currentDrawn.spell) {
+            alert("请先挥动魔杖抽取魔法！");
+            return;
+        }
+        const fileInput = document.getElementById("imageUpload");
+        const previewImg = document.getElementById("imgPreview");
+        let imageData = null;
+        if (fileInput.files.length === 0 && (!previewImg.src || previewImg.style.display === "none")) {
+            alert("请上传一张魔法影像（图片）");
+            return;
+        }
+        if (fileInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imageData = e.target.result;
+                finalSubmit(imageData);
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else if (previewImg.src && previewImg.style.display !== "none") {
+            imageData = previewImg.src;
+            finalSubmit(imageData);
+        } else {
+            alert("图片加载失败，请重新选择");
+        }
+
+        function finalSubmit(imgBase64) {
+            const userText = document.getElementById("storyText").value.trim();
+            if (!userText) {
+                alert("请分享你的魔法奇遇或吐槽（文字内容）");
+                return;
+            }
+            const newId = "art_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+            const newArt = {
+                id: newId,
+                spellName: currentDrawn.spell,
+                funItem: currentDrawn.funItem,
+                imageBase64: imgBase64,
+                userText: userText,
+                votes: 0,
+                timestamp: Date.now(),
+                isExample: false,
+                comments: []
+            };
+            artworks.push(newArt);
+            currentUserSubmitted = true;
+            localStorage.setItem("user_submitted_flag", "true");
+            persistAll();
+            renderGallery();
+            updateRanking();
+            document.getElementById("uploadBlock").style.display = "none";
+            document.getElementById("spellDisplay").innerHTML = "⚡ 感谢投稿！等待巫师们投票 ⚡";
+            document.getElementById("funElementDisplay").style.display = "none";
+            currentDrawn = { spell: null, funItem: null };
+            alert("作品已提交！巫师们可以在画廊投票和评论。");
+            createMagicGlow();
+        }
+    }
+
+    function voteForArt(artId) {
+        let target = artworks.find(a => a.id === artId);
+        if (!target || target.isExample) { alert("示例作品不可投票"); return false; }
+        if (currentUserVotedIds.includes(artId)) {
+            alert("你已经为这幅作品投过票了！");
+            return false;
+        }
+        target.votes += 1;
+        currentUserVotedIds.push(artId);
+        persistAll();
+        renderGallery();
+        updateRanking();
+        createFloatingParticle("❤️");
+        return true;
+    }
+
+    function addComment(artId, commentText) {
+        if (!commentText.trim()) return;
+        let target = artworks.find(a => a.id === artId);
+        if (!target && artId === EXAMPLE_WORK.id) target = EXAMPLE_WORK;
+        if (!target) return;
+        if (!target.comments) target.comments = [];
+        target.comments.unshift({ text: commentText, time: new Date().toLocaleTimeString() });
+        persistAll();
+        renderGallery();
+    }
+
+    function renderGallery() {
+        const gallery = document.getElementById("galleryGrid");
+        let allWorks = [EXAMPLE_WORK, ...artworks.slice().sort((a,b)=>b.timestamp - a.timestamp)];
+        gallery.innerHTML = allWorks.map(work => {
+            const isExample = work.isExample === true;
+            const hasVoted = !isExample && currentUserVotedIds.includes(work.id);
+            const voteDisabled = isExample || hasVoted;
+            return `
+                <div class="artwork-card" data-id="${work.id}">
+                    <img class="card-img" src="${work.imageBase64}" alt="魔法创作" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20150%22%3E%3Crect%20width%3D%22200%22%20height%3D%22150%22%20fill%3D%22%23312553%22%2F%3E%3Ctext%20x%3D%2220%22%20y%3D%2280%22%20fill%3D%22%23f5bc70%22%3E✨%20魔法残影%20✨%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                    <div class="card-info">
+                        <div class="spell-name">
+                            <span>🪄 ${work.spellName}</span>
+                            <span class="votes-count">❤️ ${work.votes || 0}</span>
+                        </div>
+                        <div class="fun-magic">🎁 奇物：${work.funItem || "无"}</div>
+                        <div class="user-text">📜 "${escapeHtml(work.userText)}"</div>
+                        <div class="vote-area">
+                            ${!isExample ? `<button class="vote-btn ${voteDisabled ? 'disabled' : ''}" data-id="${work.id}" ${voteDisabled ? 'disabled' : ''}>${hasVoted ? '✓ 已投票' : '⚡ 投票 ⚡'}</button>` : '<span style="color:#bba46c;">⭐ 示例作品（不可投票）⭐</span>'}
+                        </div>
+                        <div class="comments-section">
+                            <div class="comment-input">
+                                <input type="text" placeholder="写评论..." id="commentInput_${work.id}" maxlength="100">
+                                <button onclick="window.addCommentById('${work.id}')">💬 评论</button>
+                            </div>
+                            <div class="comment-list" id="commentList_${work.id}">
+                                ${(work.comments || []).slice(0,5).map(c => `<div class="comment-item">🧙 ${escapeHtml(c.text)}<span style="font-size:10px;"> (${c.time})</span></div>`).join('') || '<div style="color:#7e6b43;">暂无评论</div>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            if (btn.disabled) return;
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                if (id) voteForArt(id);
+            });
+        });
+        window.addCommentById = (artId) => {
+            const input = document.getElementById(`commentInput_${artId}`);
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            addComment(artId, text);
+            input.value = '';
+        };
+    }
+
+    function updateRanking() {
+        const sorted = [...artworks].sort((a,b) => b.votes - a.votes);
+        const rankListElem = document.getElementById("rankList");
+        if (sorted.length === 0) {
+            rankListElem.innerHTML = '<li style="color:#ad9a60;">✨ 暂无作品，快挥动魔杖参赛 ✨</li>';
+            return;
+        }
+        let html = '';
+        for (let i=0; i<Math.min(sorted.length, 10); i++) {
+            const award = AWARDS[i];
+            html += `<li class="rank-item"><span>#${i+1}</span><span>🏅 ${award}</span><span>❤️ ${sorted[i].votes}票</span></li>`;
+        }
+        if (sorted.length < 10) {
+            for (let i=sorted.length; i<10; i++) html += `<li class="rank-item" style="opacity:0.6;"><span>#${i+1}</span><span>⚡ 待加冕之位 ⚡</span><span>—</span></li>`;
+        }
+        rankListElem.innerHTML = html;
+    }
+
+    function renderFunShowcase() {
+        const container = document.getElementById("funItemsList");
+        if (!allFunItems.length) {
+            container.innerHTML = "✨ 挥动魔杖的巫师会留下奇物踪迹 ✨";
+            return;
+        }
+        container.innerHTML = allFunItems.slice(0,15).map(f => `<div class="fun-tag">🎲 ${f.item}</div>`).join('');
+    }
+
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+    // 暗码验证
+    function checkSecretAndShow() {
+        const inputVal = document.getElementById("secretInput").value.trim();
+        if (inputVal === GROUP_SECRET) {
+            localStorage.setItem("group_secret_passed", "true");
+            document.getElementById("secretModal").style.display = "none";
+            document.getElementById("mainApp").style.display = "block";
+            loadData();
+            // 绑定事件
+            document.getElementById("drawMagicBtn").addEventListener("click", drawMagic);
+            document.getElementById("submitWorkBtn").addEventListener("click", submitArtwork);
+            document.getElementById("imageUpload").addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = ev => { document.getElementById("imgPreview").src = ev.target.result; document.getElementById("imgPreview").style.display = "block"; };
+                    reader.readAsDataURL(file);
+                }
+            });
+            // 如果是管理员模式，显示重置按钮并绑定事件
+            if (isAdminMode()) {
+                const resetContainer = document.getElementById("adminResetContainer");
+                if (resetContainer) {
+                    resetContainer.style.display = "block";
+                    document.getElementById("adminResetBtn").addEventListener("click", resetAllData);
+                }
+            }
+        } else {
+            alert("暗码错误，你不是本群巫师！");
+        }
+    }
+
+    // 初始化暗码检测
+    if (localStorage.getItem("group_secret_passed") === "true") {
+        document.getElementById("secretModal").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        loadData();
+        document.getElementById("drawMagicBtn").addEventListener("click", drawMagic);
+        document.getElementById("submitWorkBtn").addEventListener("click", submitArtwork);
+        document.getElementById("imageUpload").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => { document.getElementById("imgPreview").src = ev.target.result; document.getElementById("imgPreview").style.display = "block"; };
+                reader.readAsDataURL(file);
+            }
+        });
+        if (isAdminMode()) {
+            const resetContainer = document.getElementById("adminResetContainer");
+            if (resetContainer) {
+                resetContainer.style.display = "block";
+                document.getElementById("adminResetBtn").addEventListener("click", resetAllData);
+            }
+        }
+    } else {
+        document.getElementById("verifyBtn").addEventListener("click", checkSecretAndShow);
+        document.getElementById("secretInput").addEventListener("keypress", (e) => { if(e.key === "Enter") checkSecretAndShow(); });
+    }
+</script>
+</body>
+</html>
